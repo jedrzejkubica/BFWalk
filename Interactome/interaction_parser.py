@@ -72,7 +72,7 @@ def parse_uniprot_file(uniprot_file):
     return(primary2secondary, secondary2primary)
 
 
-def parse_interaction_file(interaction_file, primary2secondary, secondary2primary, physical):
+def parse_interaction_file(interaction_file, primary2secondary, secondary2primary, source):
     """
     Parse a miTAB 2.5 or 2.7 file.
 
@@ -85,6 +85,8 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
     - tax ID must be human (9606)
     - interaction type is used to ignore interactions or set evidence type: "1" (direct) or "2" (indirect)
     sort alphabetically the two interactors (A:B and B:A are the same)
+    Argument "source" can be "biogrid" or "imex", these databases use different semantics
+    for the "interaction type" PSI-MI terms.
 
     Print to STDOUT in TSV format:
     - protein A Uniprot AC
@@ -93,6 +95,10 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
     - evidence type
     """
 
+    if source not in ["biogrid", "imex"]:
+        logger.error("parse_interaction_file() called with illegal source, fix the code")
+        raise Exception("illegal argument string for source")
+    
     re_uniprot = re.compile(r'^uniprot(kb|/swiss-prot):([A-Z0-9-_]+)$')
     re_psimi = re.compile(r'^psi-mi:"(MI:\d+)"')  # detection method and interaction type
     re_pubmed = re.compile(r'^pubmed:(\d+)$')
@@ -213,31 +219,39 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
                 count_bad_method += 1
                 continue
 
-            # interaction type should be in column 11;
-            # interaction type cannot be "bad", ie MI:0403 (colocalization),
-            # if physical=True, then
-            # interaction type MI:0407 (direct interaction) and MI:0915 (physical association) 
-            # are assinegd evidence_type="1" (direct), other types evidence_type="2" (indirect)
-            # if physical=False, then only interaction type MI:0407 (direct interaction)
-            # is assinegd evidence_type="1" (direct), other types evidence_type="2" (indirect)
-            interaction_type = ""
+            # interaction type is in column 11;
+            # use it to decide whether interaction is direct (evidence_type="1") or
+            # indirect (evidence_type="2").
+            # Unfortunately the annotation terms are used differently by Biogrid and IMEx,
+            # eg Y2H is "direct interaction" for Biogrid but "physical association" for IMEx...
+            # We reviewed all interactionDetectionMethod-interactionType pairings in Biogrid
+            # and IMEx as of 14/09/2026, and decided on the following strategy:
+            # - ignore genetic interactions from Biogrid (10 different interactionTypes but all
+            #   are filtered with interactionDetectionMethod==MI:0254 above);
+            # - ignore interactionDetectionMethod==MI:0686 "unspecified method", these are
+            #   type="direct interaction", didn't investigate deeper but sounds too vague;
+            # - for Biogrid, MI:0407 (direct interaction) is direct and everything else is indirect;
+            # - for IMEx, MI:0407 (direct interaction) and MI:0915 (physical association) are
+            #   direct, everything else is indirect.
             evidence_type = ""
-            types_split = line_split[11].split("|")  # 19/05/2026 intact and biogrid only store one type
-            for type in types_split:
-                if(re_psimi.match(type)):
-                    interaction_type = re_psimi.match(type).group(1)
-                    if physical:
-                        if(interaction_type == "MI:0407" or interaction_type == "MI:0915"):
-                            evidence_type = "1"
-                            break
-                    if(interaction_type == "MI:0407"):
-                        evidence_type = "1"
-                        break
-                    elif(interaction_type != "MI:0403"):
-                        evidence_type = "2"
-                        break
+            interaction_type = line_split[11]
+            # 19/05/2026 intact and biogrid only store one type, sanity check it
+            if '|' in interaction_type:
+                logger.error("multiple interactionTypes but code expects just one: " + line)
+                raise Exception("experiment with multiple interactionTypes")
 
+            if(re_psimi.match(interaction_type)):
+                interaction_type = re_psimi.match(interaction_type).group(1)
+                if (source == "biogrid") and (interaction_type == "MI:0407"):
+                    evidence_type = "1"
+                elif (source == "imex") and (interaction_type in ["MI:0407", "MI:0915"]):
+                    evidence_type = "1"
+                else:
+                    evidence_type = "2"
+            else:
+                raise Exception("impossible: failed to match PSIMI in " + interaction_type)
 
+            # all types are good as of today, but if we change strat or source database:
             if(evidence_type == ""):
                 count_bad_type += 1
                 continue
@@ -258,13 +272,13 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
     logger.info(f"Found {count_interactions} interactions")
 
 
-def main(interaction_file, uniprot_file, physical=False):
+def main(interaction_file, uniprot_file, source):
 
     logger.info("Parsing uniprot file")
     (primary2secondary, secondary2primary) = parse_uniprot_file(uniprot_file)
 
     logger.info("Parsing interaction file")
-    parse_interaction_file(interaction_file, primary2secondary, secondary2primary, physical)
+    parse_interaction_file(interaction_file, primary2secondary, secondary2primary, source)
 
     logger.info("Done!")
 
@@ -293,15 +307,14 @@ if __name__ == "__main__":
 
     parser.add_argument('--interactions', required=True)
     parser.add_argument('--uniprot', required=True)
-    parser.add_argument('--physical',
-                        help="Whether MI:0915 (physical association) is assigned evidence type 1 (default: False)",
-                        action='store_true',
-                        required=False)
+    parser.add_argument('--source',
+                        help='Specify source database, must be "biogrid" or "imex"',
+                        required=True)
 
     args = parser.parse_args()
 
     try:
-        main(interaction_file=args.interactions, uniprot_file=args.uniprot, physical=args.physical)
+        main(interaction_file=args.interactions, uniprot_file=args.uniprot, source=args.source)
     except Exception as e:
         # details on the issue should be in the exception name, print it to stderr and die
         sys.stderr.write("ERROR in " + script_name + " : " + repr(e) + "\n")
