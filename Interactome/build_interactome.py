@@ -116,7 +116,7 @@ def main(interactions_parsed_files, n_evidence, n_direct):
                         if PPI2pubmed2method[PPI][pubmed][1] > PPI2pubmed2method_merged[PPI][pubmed][1]:
                             PPI2pubmed2method_merged[PPI][pubmed][1] = PPI2pubmed2method[PPI][pubmed][1]
     
-    logger.info(f"Filtering on evidence (n_evidence>={n_evidence}, n_direct>={n_direct})")
+    logger.info(f"Filtering on evidence ( n_direct>={n_direct} or n_evidence>={n_evidence} )")
     for PPI in PPI2pubmed2method_merged:
         # sum evidences for each interaction, all publications (ie. pubmedIDs) combined
         evidence_sum = [0, 0]  # sum of direct and sum of total
@@ -124,8 +124,8 @@ def main(interactions_parsed_files, n_evidence, n_direct):
             evidence_sum[0] += PPI2pubmed2method_merged[PPI][pubmed][0]
             evidence_sum[1] += PPI2pubmed2method_merged[PPI][pubmed][1]
         
-        # keep interactions with at least N total evidences including N direct
-        if (evidence_sum[1] >= n_evidence) and (evidence_sum[0] >= n_direct):
+        # keep interactions with at least N total evidences or N direct
+        if (evidence_sum[1] >= n_evidence) or (evidence_sum[0] >= n_direct):
             (protein_A, protein_B) = PPI.split(':')
             print('\t'.join([protein_A, "pp", protein_B]))
 
