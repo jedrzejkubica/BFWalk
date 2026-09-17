@@ -47,7 +47,8 @@ def parse_uniprot_file(uniprot_file):
     secondary2primary = {}
     
     with open(uniprot_file, 'r') as f:
-        header = f.readline()
+        # skip header
+        f.readline()
 
         for line in f:
             line_split = line.rstrip("\n").split("\t")
@@ -105,7 +106,8 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
     re_taxID = re.compile(r'^taxid:(\d+)')
     
     with open(interaction_file, 'r') as f:
-        header = f.readline()
+        # skip header
+        f.readline()
 
         line_count = 0
         count_non_human = 0
