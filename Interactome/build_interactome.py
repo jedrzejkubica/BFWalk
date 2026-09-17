@@ -83,7 +83,25 @@ def main(interactions_parsed_files, n_evidence, n_direct):
     for file in interactions_parsed_files:
         logger.info(f"Parsing {file}")
         PPI2pubmed2method = parse_interactions(file)
+        # merge experiments from Krogan NJ (2004), Krogan NJ (2006), Gavin AC (2006)
+        # and Collins SR (2007) to avoid self-validation (see https://wiki.thebiogrid.org/doku.php/biogrid_mv):
+        # use max number of direct and total exps
+        PMIDsToMerge = ['14759368', '16554755', '16429126', '17200106']
+        for PPI in PPI2pubmed2method:
+            mergedD = 0
+            mergedT = 0
+            for pmid in PMIDsToMerge:
+                if pmid in PPI2pubmed2method[PPI]:
+                    if PPI2pubmed2method[PPI][pmid][0] > mergedD:
+                        mergedD = PPI2pubmed2method[PPI][pmid][0]
+                    if PPI2pubmed2method[PPI][pmid][1] > mergedT:
+                        mergedT = PPI2pubmed2method[PPI][pmid][1]
+                    del PPI2pubmed2method[PPI][pmid]
+            if (mergedD != 0) or (mergedT != 0):
+                # found at least one of the PMIDsToMerge, create new entry
+                PPI2pubmed2method[PPI]['KKGSmerged'] =[mergedD, mergedT]
 
+        # now merge the datasets from each source
         for PPI in PPI2pubmed2method:
             if PPI not in PPI2pubmed2method_merged:
                 PPI2pubmed2method_merged[PPI] = PPI2pubmed2method[PPI].copy()
