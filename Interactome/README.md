@@ -54,16 +54,18 @@ Parse BioGRID
 python ~/Software/BFWalk/Interactome/interaction_parser.py \
   --interactions ~/BFWalk-input/BIOGRID-ORGANISM-Homo_sapiens\*.mitab.txt \
   --uniprot ~/BFWalk-input/uniprot_parsed.tsv \
+   --source biogrid \
   1> ~/BFWalk-input/interactions_Biogrid.tsv \
   2> ~/BFWalk-input/interactions_Biogrid.log
 ```
 
-Parse IntAct
+Parse IntAct/IMEx
 
 ```
 python ~/Software/BFWalk/Interactome/interaction_parser.py \
   --interactions ~/BFWalk-input/intact.txt \
   --uniprot ~/BFWalk-input/uniprot_parsed.tsv \
+   --source imex \
   1> ~/BFWalk-input/interactions_Intact.tsv \
   2> ~/BFWalk-input/interactions_Intact.log
 ```
