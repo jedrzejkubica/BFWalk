@@ -84,7 +84,7 @@ def parse_interaction_file(interaction_file, primary2secondary, secondary2primar
     - ignore self-interactions
     - ignore some "bad" detection methods (search for "bad" below)
     - tax ID must be human (9606)
-    - interaction type is used to ignore interactions or set evidence type: "1" (direct) or "2" (indirect)
+    - interaction type is used to set evidence type: "1" (direct) or "2" (indirect)
     sort alphabetically the two interactors (A:B and B:A are the same)
     Argument "source" can be "biogrid" or "imex", these databases use different semantics
     for the "interaction type" PSI-MI terms.
