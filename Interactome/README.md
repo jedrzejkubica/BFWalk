@@ -13,7 +13,7 @@ cd ~/BFWalk-input
 
 #### Uniprot file
 
-This file will be used for for mapping between Uniprot ACs, tax IDs and gene names.
+This file will be used for mapping between Uniprot ACs, tax IDs and gene names.
 
 Download and parse Uniprot (file size ~660Mb):
 
@@ -73,7 +73,7 @@ python ~/Software/BFWalk/Interactome/interaction_parser.py \
 
 **Step 3. Build a human interactome**
 
-The interactome will be saved in a file format similar to SIF (https://cytoscape.org/manual/Cytoscape2_5Manual.html#SIF%20Format)
+The interactome will be saved in the SIF file format (https://cytoscape.org/manual/Cytoscape2_5Manual.html#SIF%20Format)
 with 3 tab-separated columns: protein1 "pp" protein2.
 
 ```
@@ -82,7 +82,7 @@ python ~/Software/BFWalk/Interactome/build_interactome.py \
   > ~/BFWalk-input/interactome_human.sif
 ```
 
-If needed, `build_interactome.py` allows the user to set the min number of evidences `--n_evidence`  (default=2) and the min number of direct interactions `--n_direct` (default=1).
+If needed, `build_interactome.py` allows the user to set the min number of evidences `--n_evidence` (default=2) or the min number of direct evidences `--n_direct` (default=1).
 
 
 ### Seeds file
@@ -98,4 +98,4 @@ python ~/Software/BFWalk/Interactome/causal_genes_parser.py \
   > ~/BFWalk-input/causal_proteins.txt
 ```
 
-Causal proteins will be saved in `causal_proteins.txt`, one UniProt Primary AC per line. It can happend that some genes are mapped to more than one protein when there are multiple, genuinely distinct protein products (in that case all proteins will be saved as causal).
+Causal proteins will be saved in `causal_proteins.txt`, one UniProt Primary AC per line. It can happen that some genes are mapped to more than one protein when there are multiple, genuinely distinct protein products (in that case all proteins will be saved as causal).
