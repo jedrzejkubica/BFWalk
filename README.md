@@ -78,6 +78,22 @@ We provide additional instructions for interactome-based disease gene prioritiza
 A manuscript describing BFWalk has been submitted. The code to perform the analyses and generate the figures presented in this manuscript are available on GitHub: [BFWalk-validation](https://github.com/jedrzejkubica/BFWalk-validation).
 
 
+## How to cite
+
+If you use BFWalk, please cite our [preprint](https://www.biorxiv.org/content/early/2026/09/28/2026.09.22.753510):
+```
+@article {Kubica2026bfwalk,
+	title = {BFWalk: backtrack-free network propagation with in-degree normalization},
+	author = {Kubica, J{\k e}drzej and Plewczynski, Dariusz and D{\'e}jean, S{\'e}bastien and Thierry-Mieg, Nicolas},
+	journal = {bioRxiv},
+	year = {2026},
+	doi = {10.64898/2026.09.22.753510},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2026/09/28/2026.09.22.753510}
+}
+```
+
+
 ## Note
 
 Formerly "GBA-centrality" for anyone arriving via old citations.
