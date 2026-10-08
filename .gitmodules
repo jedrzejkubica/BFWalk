@@ -1,4 +1,4 @@
 [submodule "BFWalk-C"]
 	path = BFWalk-C
-	url = https://github.com/jedrzejkubica/BFWalk-C.git
+	url = ../BFWalk-C.git
 	branch = main
