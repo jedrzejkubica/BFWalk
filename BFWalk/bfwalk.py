@@ -21,9 +21,10 @@ import sys
 import logging
 import pathlib
 import ctypes
+import glob
 import argparse
 
-import data_parser
+from BFWalk import data_parser
 
 # set up logger, using inherited config, in case we get called as a module
 logger = logging.getLogger(__name__)
@@ -73,7 +74,20 @@ def calculate_scores(network, node2idx, seeds, alpha, cacheFile, pathToCode, thr
     '''
     if threads:
         os.environ['OMP_NUM_THREADS'] = str(threads)
-    so_file = pathToCode + "/BFWalk-C/bfwalk.so"
+    # if pip installed, the shared library will be in the same directory as this script
+    so_files = glob.glob(os.path.join(pathToCode, "_libbfwalk*.so"))
+    # git clone, the shared library will be in BFWalk-C
+    so_files += glob.glob(os.path.join(pathToCode, "..", "BFWalk-C", "bfwalk.so"))
+
+    so_file = None
+    for f in so_files:
+        if os.path.isfile(f):
+            so_file = f
+            break
+    if so_file is None:
+        logger.error("cannot find the BFWalk-C library, run 'make' inside BFWalk-C/ or 'pip install .'")
+        raise Exception("BFWalk-C library not found")
+
     bfwalkLibrary = ctypes.CDLL(so_file)
     # declare function signature
     bfwalkLibrary.bfwalk.argtypes = [
@@ -140,7 +154,7 @@ def calculate_scores(network, node2idx, seeds, alpha, cacheFile, pathToCode, thr
     return(scoresList)
 
 
-def main(network_file, seeds_file, alpha, weighted, directed, cacheFile, pathToCode, threads):
+def run(network_file, seeds_file, alpha, weighted, directed, cacheFile, pathToCode, threads):
 
     logger.info("Parsing network")
     (network, node2idx, idx2node) = data_parser.parse_network(network_file, weighted, directed)
@@ -159,8 +173,9 @@ def main(network_file, seeds_file, alpha, weighted, directed, cacheFile, pathToC
     logger.info("Done!")
 
 
-if __name__ == "__main__":
-    (pathToCode, script_name) = os.path.split(os.path.realpath(sys.argv[0]))
+def main():
+    pathToCode = os.path.dirname(os.path.realpath(__file__))
+    script_name = os.path.basename(sys.argv[0])
     # configure logging, sub-modules will inherit this config
     logging.basicConfig(format='%(asctime)s %(levelname)s %(name)s: %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
@@ -212,10 +227,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        main(args.network, args.seeds, args.alpha, args.weighted,
+        run(args.network, args.seeds, args.alpha, args.weighted,
              args.directed, args.cacheFile, pathToCode, args.threads)
 
     except Exception as e:
         # details on the issue should be in the exception name, print it to stderr and die
         sys.stderr.write("ERROR in " + script_name + " : " + repr(e) + "\n")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

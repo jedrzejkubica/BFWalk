@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bfwalk"
+dynamic = ["version"]
+description = "Network propagation algorithm based on non-backtracking walks and in-degree normalization"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Jędrzej Kubica", email = "jedrzej.kubica@univ-grenoble-alpes.fr" },
+    { name = "Nicolas Thierry-Mieg", email = "Nicolas.Thierry-Mieg@univ-grenoble-alpes.fr" },
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.urls]
+Homepage = "https://github.com/jedrzejkubica/BFWalk"
+Source = "https://github.com/jedrzejkubica/BFWalk"
+
+# creates the "bfwalk" command
+[project.scripts]
+bfwalk = "BFWalk.bfwalk:main"
+
+[tool.setuptools]
+packages = ["BFWalk"]
+
+[tool.setuptools.dynamic]
+version = { attr = "BFWalk.__version__" }
+
+# Builds the binary wheels uploaded to PyPI. Run locally with:
+#   cibuildwheel --platform linux   (on Linux, needs Docker)
+#   cibuildwheel --platform macos   (on a Mac)
+# The wheels are written to wheelhouse/.
+# On Linux the wheels are built inside the official manylinux docker images, so
+# they work on most Linux distributions (PyPI rejects plain "linux_x86_64" wheels)
+[tool.cibuildwheel]
+build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*", "cp314-*"]
+skip = ["*-musllinux_*"]
+# only build for the architecture of the machine we are running on
+archs = ["native"]
+
+# sanity check
+test-command = "bfwalk --help"
+
+[tool.cibuildwheel.linux]
+# BFWalk-C needs zlib >= 1.2.9 (for gzfread), the older manylinux2014 image only has 1.2.7
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+# zlib headers are needed to compile BFWalk-C
+before-all = "yum install -y zlib-devel"
+
+[tool.cibuildwheel.macos]
+# OpenMP is needed to compile BFWalk-C (zlib is already included in macOS),
+# libomp is then copied into the wheel by delocate
+before-all = "brew install libomp"

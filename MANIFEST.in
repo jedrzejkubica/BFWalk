@@ -1,0 +1,7 @@
+# files to include in sdist (source distribution) uploaded to PyPI
+# the C code must be included so that it can be compiled during "pip install"
+include BFWalk-C/*.c
+include BFWalk-C/*.h
+include BFWalk-C/LICENSE
+include BFWalk-C/README.md
+recursive-include Examples *

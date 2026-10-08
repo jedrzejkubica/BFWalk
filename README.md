@@ -8,20 +8,38 @@ BFWalk is a new network propagation algorithm based on non-backtracking walks an
 
 ## Install BFWalk
 
-This repository requires [BFWalk-C](https://github.com/jedrzejkubica/BFWalk-C), because `BFWalk.py` uses a BFWalk-C shared object (.so file) for heavy-lifting calculations. You therefore need to install the [BFWalk-C dependencies](https://github.com/jedrzejkubica/BFWalk-C#dependencies). Then set up BFWalk with the following commands:
+BFWalk uses BFWalk-C for heavy-lifting calculations. The C code is compiled automatically during installation, so you need a C compiler (gcc) and the BFWalk-C dependencies (zlib and OpenMP, including the header files, e.g. zlib-devel on RHEL).
+
+We recommend to install BFWalk in a [Python virtual environment](https://docs.python.org/3/library/venv.html), it can be created and activated with:
+```
+python -m venv --system-site-packages ~/pyEnv_bfwalk
+source ~/pyEnv_bfwalk/bin/activate
+pip install --upgrade pip
+```
+
+Then install BFWalk with:
+```
+pip install bfwalk
+```
+
+Or compile the BFWalk-C code from source:
 
 ```
 git clone --recurse-submodules https://github.com/jedrzejkubica/BFWalk.git
 cd BFWalk/BFWalk-C
 make
+cd ..
+python BFWalk/bfwalk.py --help
 ```
+
+Then in the examples below, replace `bfwalk` with `python BFWalk.py`.
 
 
 ## Use BFWalk
 
 For details see:
 ```
-python BFWalk.py --help
+bfwalk --help
 ```
 
 As input, BFWalk requires:
@@ -45,7 +63,7 @@ If needed, BFWalk allows the user to set the attenuation coefficient `--alpha`  
 This example uses a simple "diamond" network with 4 nodes and 4 weighted edges: A, B, C, D. Here A is the seed.
 
 ```
-python BFWalk.py \
+bfwalk \
   --network Examples/network_weighted.sif \
   --seeds Examples/seeds.txt \
   --weighted \
@@ -59,7 +77,7 @@ python BFWalk.py \
 This example uses a simple network with 3 nodes and 2 directed edges: C -> A -> B. Here A is the seed.
 
 ```
-python BFWalk.py \
+bfwalk \
   --network Examples/network_directed.sif \
   --seeds Examples/seeds.txt \
   --directed \
