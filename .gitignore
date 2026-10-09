@@ -1,1 +1,5 @@
 *pycache*
+
+# ignore bytecode for the PyPI distribution
+*.egg-info
+dist/
