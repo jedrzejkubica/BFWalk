@@ -17,9 +17,12 @@ requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: C",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux"
     "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 
 [project.urls]
@@ -38,7 +41,6 @@ version = { attr = "BFWalk.__version__" }
 
 # Builds the binary wheels uploaded to PyPI. Run locally with:
 #   cibuildwheel --platform linux   (on Linux, needs Docker)
-#   cibuildwheel --platform macos   (on a Mac)
 # The wheels are written to wheelhouse/.
 # On Linux the wheels are built inside the official manylinux docker images, so
 # they work on most Linux distributions (PyPI rejects plain "linux_x86_64" wheels)
@@ -57,8 +59,3 @@ manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 # zlib headers are needed to compile BFWalk-C
 before-all = "yum install -y zlib-devel"
-
-[tool.cibuildwheel.macos]
-# OpenMP is needed to compile BFWalk-C (zlib is already included in macOS),
-# libomp is then copied into the wheel by delocate
-before-all = "brew install libomp"
