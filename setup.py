@@ -7,8 +7,6 @@
 
 import glob
 import os
-import subprocess
-import sys
 
 from setuptools import Extension, setup
 
@@ -26,17 +24,8 @@ if len(c_sources) == 0:
     raise SystemExit("ERROR: no C source files found in " + C_DIR + "/, " +
                      "you probably need to run: git submodule update --init")
 
-if sys.platform == "darwin":
-    # Apple's clang has no built-in OpenMP, use libomp from Homebrew (brew install libomp)
-    try:
-        libomp = subprocess.check_output(["brew", "--prefix", "libomp"], text=True).strip()
-    except (OSError, subprocess.CalledProcessError):
-        raise SystemExit("ERROR: on macOS BFWalk needs OpenMP, please run: brew install libomp")
-    openmp_compile_args = ["-Xpreprocessor", "-fopenmp", "-I" + libomp + "/include"]
-    openmp_link_args = ["-L" + libomp + "/lib", "-lomp"]
-else:
-    openmp_compile_args = ["-fopenmp"]
-    openmp_link_args = ["-fopenmp"]
+openmp_compile_args = ["-fopenmp"]
+openmp_link_args = ["-fopenmp"]
 
 bfwalk_c = Extension(
     name="BFWalk._libbfwalk",
